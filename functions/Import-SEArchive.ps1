@@ -25,7 +25,7 @@ function Import-SeArchive
 	Import-SeArchive -pathToFiles 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList 'Badges','Votes'
 	.EXAMPLE
 	Import all files into database, using default schema, and verbose logging
-	$files = Get-ChildItem 'C:\temp\quant.stackexchange.com' -filter *.xml | select -ExpandProperty BaseName
+	$files = Get-ChildItem 'C:\temp\quant.stackexchange.com' -filter *.xml | Select-Object -ExpandProperty BaseName
     Import-SeArchive -pathToFiles 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -tableList $files -Verbose
     .EXAMPLE
     Setting the batch size
@@ -50,7 +50,7 @@ function Import-SeArchive
     Push-Location
     Set-Location $pathToFiles
 
-    $Files = Get-ChildItem -Path $pathToFiles -Filter *.xml | select Name, BaseName
+    $Files = Get-ChildItem -Path $pathToFiles -Filter *.xml | Select-Object Name, BaseName
 
     $sqlCn = New-Object System.Data.SqlClient.SqlConnection("Data Source=$($server);Integrated Security=SSPI;Initial Catalog=$($database)");
     try {
@@ -85,7 +85,7 @@ function Import-SeArchive
                                 "Badges" {
                                     Write-Verbose "Found Badges file..."
                                     [xml]$badges = Get-Content $f.Name
-                                    $badgesDt = $badges.badges.Row | select Id, UserId, Name, Date | Out-DataTable
+                                    $badgesDt = $badges.badges.Row | Select-Object Id, UserId, Name, Date | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading Badges file..."
                                     $bulkLoad.WriteToServer($badgesDt)
@@ -93,7 +93,7 @@ function Import-SeArchive
                                 "Comments" {  
                                     Write-Verbose "Found Comments file..."
                                     [xml]$comments = Get-Content $f.Name
-                                    $commentsDt = $comments.comments.row | select Id, PostId, Score, Text, CreationDate, UserId | Out-DataTable
+                                    $commentsDt = $comments.comments.row | Select-Object Id, PostId, Score, Text, CreationDate, UserId | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading Comments file..."
                                     $bulkLoad.WriteToServer($commentsDt)
@@ -101,7 +101,7 @@ function Import-SeArchive
                                 "PostHistory" {
                                     Write-Verbose "Found PostHistory file..."
                                     [xml]$postHistory = Get-Content $f.Name
-                                    $postHistoryDt = $postHistory.posthistory.row | select Id, PostHistoryTypeId, PostId, RevisionGUID, CreationDate, 
+                                    $postHistoryDt = $postHistory.posthistory.row | Select-Object Id, PostHistoryTypeId, PostId, RevisionGUID, CreationDate, 
                                         UserId, UserDisplayName, Comment, Text, CloseReasonId | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading PostHistory file..."
@@ -110,7 +110,7 @@ function Import-SeArchive
                                 "PostLinks" {
                                     Write-Verbose "Found PostLinks file..."
                                     [xml]$postLink = Get-Content $f.Name
-                                    $postLinkDt = $postLink.postlinks.row | select Id, CreationDate, PostId, RelatedPostId, LinkTypeId | Out-DataTable
+                                    $postLinkDt = $postLink.postlinks.row | Select-Object Id, CreationDate, PostId, RelatedPostId, LinkTypeId | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading PostLinks file..."
                                     $bulkLoad.WriteToServer($postLinkDt)
@@ -118,7 +118,7 @@ function Import-SeArchive
                                 "Posts" {
                                     Write-Verbose "Found Posts file..."
                                     [xml]$posts = Get-Content $f.Name
-                                    $postsDt = $posts.posts.row | select Id, PostTypeId, ParentId, AcceptedAnswerId, CreationDate, Score, ViewCount,
+                                    $postsDt = $posts.posts.row | Select-Object Id, PostTypeId, ParentId, AcceptedAnswerId, CreationDate, Score, ViewCount,
                                         Body, OwnerUserId, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, CommunityOwnedDate,
                                         ClosedDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
@@ -128,7 +128,7 @@ function Import-SeArchive
                                 "Tags" {
                                     Write-Verbose "Found Tags file..."
                                     [xml]$tags = Get-Content $f.Name
-                                    $tagsDt = $tags.tags.row | select Id, TagName, Count, ExcerptPostId, WikiPostId | Out-DataTable
+                                    $tagsDt = $tags.tags.row | Select-Object Id, TagName, Count, ExcerptPostId, WikiPostId | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading Tags file..."
                                     $bulkLoad.WriteToServer($tagsDt)
@@ -136,7 +136,7 @@ function Import-SeArchive
                                 "Users" {
                                     Write-Verbose "Found Users file..."
                                     [xml]$users = Get-Content $f.Name
-                                    $usersDt = $users.users.row | select Id, Reputation, CreationDate, DisplayName, EmailHash, LastAccessDate, WebsiteUrl,
+                                    $usersDt = $users.users.row | Select-Object Id, Reputation, CreationDate, DisplayName, EmailHash, LastAccessDate, WebsiteUrl,
                                         Location, Age, AboutMe, Views, UpVotes, DownVotes, ProfileImageUrl, AccountId | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading Users file..."
@@ -145,7 +145,7 @@ function Import-SeArchive
                                 "Votes" {
                                     Write-Verbose "Found Votes file..."
                                     [xml]$votes = Get-Content $f.Name
-                                    $votesDt = $votes.votes.row | select Id, PostId, VoteTypeId, UserId, CreationDate, BountyAmount | Out-DataTable
+                                    $votesDt = $votes.votes.row | Select-Object Id, PostId, VoteTypeId, UserId, CreationDate, BountyAmount | Out-DataTable
                                     $bulkLoad.DestinationTableName = "$schema.$t"
                                     Write-Verbose "Bulk loading Votes file..."
                                     $bulkLoad.WriteToServer($votesDt)

@@ -55,7 +55,7 @@ function Get-SEArchive {
 	
 	Write-Verbose "URL being used: $SEArchiveSite"
 	try {
-		$siteDumpList = Invoke-WebRequest $SEArchiveSite | select -ExpandProperty Links | where { $_ -match ".7z" } | select -ExpandProperty innerText
+		$siteDumpList = Invoke-WebRequest $SEArchiveSite | Select-Object -ExpandProperty Links | Where-Object { $_ -match ".7z" } | Select-Object -ExpandProperty innerText
 	}
 	catch {
 		$errText = $error[0].ToString()
@@ -70,7 +70,7 @@ function Get-SEArchive {
 	
 	if ($getReadme) {
 		Write-Verbose "Downloading ReadMe.txt"
-		$readme = Invoke-WebRequest $SEArchiveSite | select -ExpandProperty Links | where { $_ -eq "readme.txt" } | select -ExpandProperty innerText
+		$readme = Invoke-WebRequest $SEArchiveSite | Select-Object -ExpandProperty Links | Where-Object { $_ -eq "readme.txt" } | Select-Object -ExpandProperty innerText
 		$source = "$SEarchiveSite/$readme"
 		$destination = "$downloadPath\$readme"
 		Write-Verbose "Source path: $source"
@@ -248,7 +248,7 @@ function Get-SEArchive {
         }
     }
     else {
-	    $SiteToGrab = $siteDumpList | where {$_ -match "^$siteName"}
+	    $SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$siteName"}
 	    Write-Verbose "Number of site(s) found: $($SiteToGrab.Count)"
 	    if ($SiteToGrab.Count -eq 1) {
 		    Write-Verbose "Your siteName has been found: $SiteToGrab"
