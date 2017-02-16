@@ -14,13 +14,16 @@ function Get-SEArchive {
 		Switch to just list all the sites found available to download.
 	.EXAMPLE
 	Download a non-meta site in StackExchange network
-    Get-StackExchangeArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
+    Get-SEArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
 	.EXAMPLE
-	Download a meta site in StachExchange network
-	Get-StackExchangeArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
+	Download a meta site in StackExchange network
+	Get-SEArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
 	.EXAMPLE
 	Download a site and the readme file for StackExchanage Archives
-	Get-StackExchangeArchive -siteName dba -downloadPath 'C:\Temp\MyDumpSite' -getReadme
+	Get-SEArchive -siteName dba -downloadPath 'C:\Temp\MyDumpSite' -getReadme
+	.EXAMPLE
+	Get list of files for given site that are available, includes date and size
+	Get-SEArchive -siteName woodworking -listAvailable
 #>
 	[CmdletBinding()]
 	param (
