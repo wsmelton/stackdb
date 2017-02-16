@@ -10,6 +10,8 @@ function Get-SEArchive {
         String. The path to download the archive file to on your local or network directory
     .PARAMETER getReadme
         Switch. Will download the ReadMe.txt file as well.
+	.PARAMETER listAvailable
+		Switch to just list all the sites found available to download.
 	.EXAMPLE
 	Download a non-meta site in StackExchange network
     Get-StackExchangeArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
@@ -22,40 +24,21 @@ function Get-SEArchive {
 #>
 	[CmdletBinding()]
 	param (
-		[Parameter(
-			Mandatory = $true,
-			Position = 0
-		)]
 		[ValidateNotNull()]
-		[Alias("site")]
 		[string[]]$siteName,
-		
-		[Parameter(
-			Mandatory = $true,
-			Position = 1
-		)]
+
 		[ValidateNotNull()]
 		[string]$downloadPath,
-		
-		[Parameter(
-			Mandatory = $false,
-			Position = 2)]
-		[switch]$getReadme
+
+		[switch]$getReadme,
+		[switch]$listAvailable
 	)
-	
-	# provide option to create path if it does not exist
-	if ( !(Test-Path $downloadPath -PathType Container) ) {
-		Write-Verbose "Path: $downloadPath == DOES NOT EXIST"
-		$decision = Read-Host "Do you want to create $downloadPath (Y/N)?: "
-		if ($decision -eq 'Y') {
-			try { New-Item $downloadPath -ItemType Directory -Force }
-			catch { $errText = $error[0].ToString(); $errText }
-		}
-	}
-	
-	Write-Verbose "URL being used: $SEArchiveSite"
+	[string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
+	$downloadPath = $downloadPath.TrimEnd("\")
+	Write-Verbose "URL being used: $SEArchiveUrl"
 	try {
-		$siteDumpList = Invoke-WebRequest $SEArchiveSite | Select-Object -ExpandProperty Links | Where-Object { $_ -match ".7z" } | Select-Object -ExpandProperty innerText
+		$site = Invoke-WebRequest -Uri $SEArchiveUrl
+		$siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
 	}
 	catch {
 		$errText = $error[0].ToString()
@@ -67,11 +50,29 @@ function Get-SEArchive {
 			Write-Error $errText
 		}
 	}
-	
+
+	if ($listAvailable) {
+		# Best ditch effort to try and pull down list with name, date, and size of file
+		$siteList = ($site.AllElements | Where-Object tagName -eq "body" | ForEach-Object innerText).Split("`r") | Where-Object { $_ -match "7z"}
+		if ($siteName) {
+			$sitelist = $siteList | Where-Object {$_ -match "$siteName"}
+		}
+		return $siteList
+	}
+
+	# provide option to create path if it does not exist
+	if ( !(Test-Path $downloadPath -PathType Container) ) {
+		Write-Verbose "Path: $downloadPath == DOES NOT EXIST"
+		$decision = Read-Host "Do you want to create $downloadPath (Y/N)?: "
+		if ($decision -eq 'Y') {
+			try { New-Item $downloadPath -ItemType Directory -Force }
+			catch { $errText = $error[0].ToString(); $errText }
+		}
+	}
+
 	if ($getReadme) {
 		Write-Verbose "Downloading ReadMe.txt"
-		$readme = Invoke-WebRequest $SEArchiveSite | Select-Object -ExpandProperty Links | Where-Object { $_ -eq "readme.txt" } | Select-Object -ExpandProperty innerText
-		$source = "$SEarchiveSite/$readme"
+		$readme = Invoke-WebRequest "$SEArchiveUrl/$readme"
 		$destination = "$downloadPath\$readme"
 		Write-Verbose "Source path: $source"
 		Write-Verbose "Destination path: $destination"
@@ -98,225 +99,17 @@ function Get-SEArchive {
 
 	Write-Verbose "Number of files found from URL: $($siteDumpList.Count)"
 
-    if ($siteName -match "stackoverflow")
-    {
-        $decision = Read-Host -Prompt "Are you sure you want to download those big, freaking files???? Y/N"
-        if ($decision -eq 'Y') {
-            Write-Verbose "Alright you asked for it..."
-            
-            $Badges = "$SEArchiveSite/stackoverflow.com-Badges.7z"
-            $Comments = "$SEArchiveSite/stackoverflow.com-Comments.7z"
-            $PostHistory = "$SEArchiveSite/stackoverflow.com-PostHistory.7z"
-            $PostLinks = "$SEArchiveSite/stackoverflow.com-PostLinks.7z"
-            $Posts = "$SEArchiveSite/stackoverflow.com-Posts.7z"
-            $Tags = "$SEArchiveSite/stackoverflow.com-Tags.7z"
-            $Users = "$SEArchiveSite/stackoverflow.com-Users.7z"
-            $Votes = "$SEArchiveSite/stackoverflow.com-Votes.7z"
-
-		    $destBadges = "$downloadPath\stackoverflow.com-Badges.7z"
-            $destComments = "$downloadPath\stackoverflow.com-Comments.7z"
-            $destPostHistory = "$downloadPath\stackoverflow.com-PostHistory.7z"
-            $destPostLinks = "$downloadPath\stackoverflow.com-PostLinks.7z"
-            $destPosts = "$downloadPath\stackoverflow.com-Posts.7z"
-            $destTags = "$downloadPath\stackoverflow.com-Tags.7z"
-            $destUsers = "$downloadPath\stackoverflow.com-Users.7z"
-            $destVotes = "$downloadPath\stackoverflow.com-Votes.7z"
-
-		    try {
-		        Write-Verbose "Destination path: $destBadges"
-		        Write-Verbose "Source path: $Badges"
-			    Invoke-WebRequest $Badges -OutFile $destBadges
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-		        Write-Verbose "Destination path: $destComments"
-                Write-Verbose "Source path: $Comments"
-                Invoke-WebRequest $Comments -OutFile $destComments
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-  		        Write-Verbose "Destination path: $destPostHistory"
-                Write-Verbose "Source path: $PostHistory"
-                Invoke-WebRequest $PostHistory -OutFile $destPostHistory
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-                Write-Verbose "Destination path: $destPostLinks"
-                Write-Verbose "Source path: $PostLinks"
-                Invoke-WebRequest $PostLinks -OutFile $destPostLinks
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-				Write-Verbose "Destination path: $destPosts"
-		        Write-Verbose "Source path: $Posts"
-			    Invoke-WebRequest $Posts -OutFile $destPosts
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-		        Write-Verbose "Destination path: $destTags"
-		        Write-Verbose "Source path: $Tags"
-			    Invoke-WebRequest $Tags -OutFile $destTags
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-		        Write-Verbose "Destination path: $destUsers"
-		        Write-Verbose "Source path: $Users"
-			    Invoke-WebRequest $Users -OutFile $destUsers
-			}
-			catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-			try {
-		        Write-Verbose "Destination path: $destVotes"
-		        Write-Verbose "Source path: $Votes"
-			    Invoke-WebRequest $Votes -OutFile $destVotes
-		    }
-		    catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-        }
-        else {
-            Write-Verbose "Cancelling"
-        }
-    }
-    else {
-	    $SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$siteName"}
-	    Write-Verbose "Number of site(s) found: $($SiteToGrab.Count)"
-	    if ($SiteToGrab.Count -eq 1) {
-		    Write-Verbose "Your siteName has been found: $SiteToGrab"
-		
-		    $source = "$SEArchiveSite/$SiteToGrab"
-		    $destination = "$downloadPath\$SiteToGrab"
-		    Write-Verbose "Source path: $source"
-		    Write-Verbose "Destination path: $destination"
-
-		    try {
-			    Invoke-WebRequest $source -OutFile $destination
-		    }
-		    catch {
-			    $errText = $error[0].ToString()
-			    if ($errText.Contains("remote server returned an error")) {
-				    Write-Verbose "Error returned by archive.org"
-				    Return "Error returned: $errText"
-			    }
-			    else {
-				    Write-Error $errText
-			    }
-		    }
-		    if (Test-Path $destination) {
-			    Write-Verbose "Download completed for $destination"
-		    }
-		    else {
-			    Write-Verbose "Something went wrong and the file $destination does not exist"
-		    }
-	    }
-	    elseif ($SiteToGrab.Count -gt 1) {
-		    Write-Verbose "More than one file was found"
-		    $decision = Read-Host "Do you want to download all files Y/N?"
-		    if ($decision -eq 'Y') {
-			    foreach ($s in $SiteToGrab) {
-				    Write-Verbose "Your siteName has been found: $s"
-				    $source = "$SEArchiveSite/$s"
-				    $destination = "$downloadPath\$s"
-
-				    Write-Verbose "Source path: $source"
-				    Write-Verbose "Destination path: $destination"
-
-				    try {
-					    Invoke-WebRequest $source -OutFile $destination
-				    }
-				    catch {
-					    $errText = $error[0].ToString()
-					    if ($errText.Contains("remote server returned an error")) {
-						    Write-Verbose "Error returned by archive.org"
-						    Return "Error returned: $errText"
-					    }
-					    else {
-						    Write-Error $errText
-					    }
-				    }
-				    if (Test-Path $destination) {
-					    Write-Verbose "Download completed for $destination"
-				    }
-				    else {
-					    Write-Verbose "Something went wrong and the file $destination does not exist"
-				    }
-			    }
-		    }
-		    elseif ($decision -eq 'N') {
-			    Write-Verbose "Cancelling"
-		    }
-		    else {
-			    Write-Verbose "Response was not recognized"
-		    }
-	    }
-    }
+	$SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$siteName"}
+	foreach ($item in $SiteToGrab) {
+		try {
+			$source = "$SEArchiveUrl\$item"
+			$destination = "$downloadPath\$($item.Split("/")[-1])"
+			Write-Verbose "Source path: $source"
+			Write-Verbose "Destination path: $destination"
+			Invoke-WebRequest $source -OutFile $destination
+		}
+		catch {
+			Write-Error $_.Exception
+		} #end try/catch
+	} #end foreach item
 }
