@@ -1,4 +1,4 @@
-function Export-StackExchangeArchive {
+function Export-SEArchive {
 <#
 	.SYNOPSIS
 		Uses 7-Zip to list and extract a zipped file with extension *.7z
@@ -10,37 +10,39 @@ function Export-StackExchangeArchive {
 		Will list the contents of each zipped file
 	.EXAMPLE
 	Extract single zipped file and list contents
-    Export-StackExchangeArchive 'C:\Temp\MyZippedFile.7z' -listContents
+    Export-SEArchive 'C:\Temp\MyZippedFile.7z' -listContents
 #>
 	[CmdletBinding()]
 	param (
-		[Parameter(
-			Mandatory = $true,
-			Position = 0
-		)]
-		[ValidateNotNull()]
-		[Alias("file")]
+		[string]$szPath = "$env:ProgramFiles\7-Zip\7z.exe",
 		[string]$filename,
-		[Parameter(
-			Mandatory = $false,
-			Position = 1
-		)]
+		[string]$exportPath,
 		[switch]$listContents
 	)
-	
-	if (Test-Path $filename) {
-		if ($listContents) {
-			sz l $filename
-			Write-Verbose "Extracting contents of $filename"
-			sz e $filename
+	BEGIN {
+		if (Test-Path $szPath) {
+			Set-Alias sz $szPath -Scope Local
 		}
-		else {
-			Write-Verbose "Extracting contents to $filename"
-			sz e $filename
+		if (!$exportPath) {
+			$exportPath = (Get-ChildItem $filename).DirectoryName
 		}
 	}
-	else {
-		Write-Verbose "File does not exist: $filename"
-		Return "File not found"
+	PROCESS {
+		if (Test-Path $filename) {
+			if ($listContents) {
+				sz l $filename
+			}
+			else {
+				Write-Verbose "Extracting contents to $filename"
+				$execute = "sz e $filename -o$exportPath"
+				Write-Verbose $execute
+				Invoke-Expression $execute
+			}
+		}
+		else {
+			Write-Verbose "File does not exist: $filename"
+			Return "[$filename] File not found"
+		}
+		Remove-Item alias:\sz -force
 	}
 }
