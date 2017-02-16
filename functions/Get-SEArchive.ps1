@@ -11,7 +11,7 @@ function Get-SEArchive {
     .PARAMETER getReadme
         Switch. Will download the ReadMe.txt file as well.
 	.PARAMETER listAvailable
-		Switch to just list all the sites found available to download.
+		Switch to just list the sites found available to download, filters when siteName provided.
 	.EXAMPLE
 	Download a non-meta site in StackExchange network
     Get-SEArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
