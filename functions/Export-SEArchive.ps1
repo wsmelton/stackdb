@@ -4,13 +4,18 @@ function Export-SEArchive {
 		Uses 7-Zip to list and extract a zipped file with extension *.7z
 	.DESCRIPTION
 		Utilizes alias "sz" created within the module StackExchange that calls CLI of 7-Zip
+	.PARAMETER szPath
+		Path to the 7z.exe from 7-Zip, defaults to the ProfileFiles environment variable path
 	.PARAMETER filename
 		The zipped file to be uncompressed.
 	.PARAMETER listContents
-		Will list the contents of each zipped file
+		Will list the contents of the zipped file
 	.EXAMPLE
-	Extract single zipped file and list contents
-    Export-SEArchive 'C:\Temp\MyZippedFile.7z' -listContents
+	List contents of the MyZippedFile.7z file
+    Export-SEArchive -filename 'C:\Temp\MyZippedFile.7z' -listContents
+	.EXAMPLE
+	Export contents of MyZippedFile.7z to C:\Temp\MyFolder
+	Export-SEArchive -filename 'C:\Temp\MyZippedFIle.7z' -exportPath 'C:\Temp\MyFolder'
 #>
 	[CmdletBinding()]
 	param (
