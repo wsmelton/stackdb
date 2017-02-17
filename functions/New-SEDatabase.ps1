@@ -1,22 +1,17 @@
 function New-SEDatabase {
-	[CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
-	param(
-		[string]$sqlServer,
-		[string]$databaseName,
-		[string]$dataPath,
-		[string]$logPath,
-		[switch]$justTables
-	)
-	BEGIN {
-		$sqlcn = New-Sqlcn -sqlserver $sqlServer
-		$cmd = $sqlcn.CreateCommand()
+    [CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
+    param(
+        [string]$sqlServer,
+        [string]$databaseName,
+        [string]$dataPath,
+        [string]$logPath
+    )
+    BEGIN {
+        $sqlcn = New-Sqlcn -sqlserver $sqlServer
+        $cmd = $sqlcn.CreateCommand()
 
-		$sqlDatabase = "
-			CREATE DATABASE $databaseName
-				ON PRIMARY (NAME = $($databaseName)_data, FILENAME = '$dataPath\$($databaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
-				LOG ON (NAME = $($databaseName)_log, FILENAME='$logPath\$($databaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
-		$sqlDbRecoveryModel = "ALTER DATABASE $databaseName SET RECOVERY SIMPLE;"
-		$sqlTables = "
+        $sqlDbRecoveryModel = "ALTER DATABASE $databaseName SET RECOVERY SIMPLE;"
+        $sqlTables = "
 			IF (OBJECT_ID('dbo.PostsTypeIdDesc') IS NOT NULL)
 				DROP TABLE dbo.PostsTypeIdDesc;
 			CREATE TABLE [dbo].[PostsTypeIdDesc] (
@@ -207,71 +202,72 @@ function New-SEDatabase {
 				[ExcerptPostId] int NULL,
 				[WikiPostId] int NULL
 			);"
-	}
-	PROCESS {
-		Write-Verbose "Data Path: $dataPath"
-		Write-Verbose "Log Path: $logPath"
+    }
+    PROCESS {
+        Write-Verbose "Data Path: $dataPath"
+        Write-Verbose "Log Path: $logPath"
 
-		if (!$justTables) {
-			$sql = "
-				SELECT DefaultDataPath = SERVERPROPERTY('InstanceDefaultDataPath'),
-					DefaultLogPath = SERVERPROPERTY('InstanceDefaultLogPath')"
-			$cmd.CommandText = $sql
-			$adp = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-			$data = New-Object System.Data.DataSet
-			$null = $adp.Fill($data)
-			$rows = $data.Tables[0].Rows
-			$defaultDataPath = $rows.DefaultDataPath
-			$defaultLogPath = $rows.DefaultLogPath
+        $sql = "
+			SELECT DefaultDataPath = SERVERPROPERTY('InstanceDefaultDataPath'),
+				DefaultLogPath = SERVERPROPERTY('InstanceDefaultLogPath')"
+        $cmd.CommandText = $sql
+        $adp = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
+        $data = New-Object System.Data.DataSet
+        $null = $adp.Fill($data)
+        $rows = $data.Tables[0].Rows
+        $defaultDataPath = $rows.DefaultDataPath
+        $defaultLogPath = $rows.DefaultLogPath
+        if ($dataPath.Length -eq 0) {
+            $dataPath = $defaultDataPath
+        }
+        if ($logPath.Length -eq 0) {
+            $logPath = $defaultLogPath
+        }
 
-			if ($dataPath.Length -eq 0) {
-				$dataPath = $defaultDataPath
-			}
-			if ($logPath.Length -eq 0) {
-				$logPath = $defaultLogPath
-			}
+        $dataPath = $dataPath.TrimEnd("\")
+        $logPath = $logPath.TrimEnd("\")
 
-			$dataPath = $dataPath.TrimEnd("\")
-			$logPath = $logPath.TrimEnd("\")
+        $sqlDatabase = "
+			CREATE DATABASE $databaseName
+				ON PRIMARY (NAME = $($databaseName)_data, FILENAME = '$dataPath\$($databaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
+				LOG ON (NAME = $($databaseName)_log, FILENAME='$logPath\$($databaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
 
-			if ($PSCmdlet.ShouldProcess($databaseName,"Create database: $databaseName")) {
-				if (!(Test-Path $dataPath) -and !(Test-Path $logPath)) {
-					throw "Paths provided for data or log are not found!"
-				}
-				Write-Debug $sqlDatabase
-				$cmd.CommandText = $sqlDatabase
-				try {
-					$null = $cmd.ExecuteNonQuery()
-				}
-				catch {
-					throw "Error`: $_"
-				}
-				Write-Output "[Database] $databaseName Created"
-			}
-			if ($PSCmdlet.ShouldProcess($databaseName,"Adjusted recovery model")) {
-				try {
-					$cmd.ComandText = $sqlDbRecoveryModel
-					$null = $cmd.ExecuteNonQuery()
-				}
-				catch {
-					throw "Error`: $_"
-				}
-				Write-Output "[Database] $databaseName set to SIMPLE recovery";
-			}
-		}
-
-		if ($PSCmdlet.ShouldProcess($databaseName,"Build SE tables")) {
-			try {
-				$sqlcn.ChangeDatabase($databaseName)
-				$cmd.CommandText = $sqlTables
-				$null = $cmd.ExecuteNonQuery()
-			}
-			catch {
-				throw "Error`: $_"
-			}
-		}
-	}
-	END {
-		$sqlcn.Close()
-	}
+        if ($PSCmdlet.ShouldProcess($databaseName,"Create database: $databaseName")) {
+            if (!(Test-Path $dataPath) -and !(Test-Path $logPath)) {
+                throw "Paths provided for data or log are not found!"
+            }
+            Write-Debug $sqlDatabase
+            $cmd.CommandText = $sqlDatabase
+            try {
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+            Write-Output "[Database] $databaseName Created"
+        }
+        if ($PSCmdlet.ShouldProcess($databaseName,"Adjusted recovery model")) {
+            try {
+                $cmd.CommandText = $sqlDbRecoveryModel
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+            Write-Output "[Database] $databaseName set to SIMPLE recovery";
+        }
+        if ($PSCmdlet.ShouldProcess($databaseName,"Build SE tables")) {
+            try {
+                $sqlcn.ChangeDatabase($databaseName)
+                $cmd.CommandText = $sqlTables
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+        }
+    }
+    END {
+        $sqlcn.Close()
+    }
 }
