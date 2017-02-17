@@ -8,8 +8,6 @@ function Get-SEArchive {
 		String. The [siteName].stackexchange.com; with meta sites you can reference them as "meta.dba".
     .PARAMETER downloadPath
         String. The path to download the archive file to on your local or network directory
-    .PARAMETER getReadme
-        Switch. Will download the ReadMe.txt file as well.
 	.PARAMETER listAvailable
 		Switch to just list the sites found available to download, filters when siteName provided.
 	.EXAMPLE
@@ -19,21 +17,15 @@ function Get-SEArchive {
 	Download a meta site in StackExchange network
 	Get-SEArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
 	.EXAMPLE
-	Download a site and the readme file for StackExchanage Archives
-	Get-SEArchive -siteName dba -downloadPath 'C:\Temp\MyDumpSite' -getReadme
-	.EXAMPLE
 	Get list of files for given site that are available, includes date and size
 	Get-SEArchive -siteName woodworking -listAvailable
 #>
 	[CmdletBinding()]
 	param (
 		[ValidateNotNull()]
-		[string[]]$siteName,
-
+		[string]$siteName,
 		[ValidateNotNull()]
 		[string]$downloadPath,
-
-		[switch]$getReadme,
 		[switch]$listAvailable
 	)
 	[string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
@@ -44,14 +36,7 @@ function Get-SEArchive {
 		$siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
 	}
 	catch {
-		$errText = $error[0].ToString()
-		if ($errText.Contains("remote server returned an error")) {
-			Write-Verbose "Error returned by archive.org"
-			Return "Error returned: $errText"
-		}
-		else {
-			Write-Error $errText
-		}
+		throw "Error`: $_"
 	}
 
 	if ($listAvailable) {
@@ -68,35 +53,12 @@ function Get-SEArchive {
 		Write-Verbose "Path: $downloadPath == DOES NOT EXIST"
 		$decision = Read-Host "Do you want to create $downloadPath (Y/N)?: "
 		if ($decision -eq 'Y') {
-			try { New-Item $downloadPath -ItemType Directory -Force }
-			catch { $errText = $error[0].ToString(); $errText }
-		}
-	}
-
-	if ($getReadme) {
-		Write-Verbose "Downloading ReadMe.txt"
-		$readme = Invoke-WebRequest "$SEArchiveUrl/$readme"
-		$destination = "$downloadPath\$readme"
-		Write-Verbose "Source path: $source"
-		Write-Verbose "Destination path: $destination"
-		try {
-			Invoke-WebRequest $source -OutFile $destination
-		}
-		catch {
-			$errText = $error[0].ToString()
-			if ($errText.Contains("remote server returned an error")) {
-				Write-Verbose "Error returned by archive.org"
-				Return "Error returned: $errText"
+			try {
+				New-Item $downloadPath -ItemType Directory -Force
 			}
-			else {
-				Write-Error $errText
+			catch {
+				throw "Error`: $_"
 			}
-		}
-		if (Test-Path $destination) {
-			Write-Verbose "Download completed for $destination"
-		}
-		else {
-			Write-Verbose "Something went wrong and the file $destination does not exist"
 		}
 	}
 
@@ -112,7 +74,7 @@ function Get-SEArchive {
 			Invoke-WebRequest $source -OutFile $destination
 		}
 		catch {
-			Write-Error $_.Exception
+			throw "Error`: $_"
 		} #end try/catch
 	} #end foreach item
 }
