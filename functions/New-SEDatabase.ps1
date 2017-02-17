@@ -17,7 +17,6 @@ function New-SEDatabase {
 				LOG ON (NAME = $($databaseName)_log, FILENAME='$logPath\$($databaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
 		$sqlDbRecoveryModel = "ALTER DATABASE $databaseName SET RECOVERY SIMPLE;"
 		$sqlTables = "
-
 			IF (OBJECT_ID('dbo.PostsTypeIdDesc') IS NOT NULL)
 				DROP TABLE dbo.PostsTypeIdDesc;
 			CREATE TABLE [dbo].[PostsTypeIdDesc] (
@@ -89,7 +88,7 @@ function New-SEDatabase {
 				(9,'BountyClose'),
 				(10,'Deletion'),
 				(11,'Undeletion'),
-				(12,'spam'),
+				(12,'Spam'),
 				(13,'InformModerator');
 
 			IF OBJECT_ID('dbo.PostLinkTypeIdDesc') IS NOT NULL
@@ -104,7 +103,6 @@ function New-SEDatabase {
 			IF OBJECT_ID('dbo.Badges') IS NOT NULL
 				DROP TABLE dbo.Badges;
 			CREATE TABLE [dbo].[Badges] (
-				[Id] int,
 				[UserId] int,
 				[Name] varchar(500) NULL,
 				[Date] datetime NULL
@@ -168,7 +166,7 @@ function New-SEDatabase {
 				[CreationDate] datetime NULL,
 				[PostId] int NULL,
 				[RelatedPostId] int NULL,
-				[LinkTypeId] int NULL
+				[PostLinkTypeId] int NULL
 			);
 
 			IF OBJECT_ID('dbo.Users') IS NOT NULL
@@ -186,9 +184,7 @@ function New-SEDatabase {
 				[AboutMe] varchar(max) NULL,
 				[Views] int NULL,
 				[UpVotes] int NULL,
-				[DownVotes] int NULL,
-				[ProfileImageUrl] varchar(250) NULL,
-				[AcountId] int NULL
+				[DownVotes] int NULL
 			);
 
 			IF OBJECT_ID('dbo.Votes') IS NOT NULL
@@ -211,12 +207,8 @@ function New-SEDatabase {
 				[ExcerptPostId] int NULL,
 				[WikiPostId] int NULL
 			);"
-
-
-
 	}
 	PROCESS {
-
 		Write-Verbose "Data Path: $dataPath"
 		Write-Verbose "Log Path: $logPath"
 
