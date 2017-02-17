@@ -38,6 +38,8 @@ function Export-SEArchive {
 				sz l $filename
 			}
 			else {
+				$basefilename = (Get-ChildItem $filename).BaseName.TrimEnd(".7z")
+				$exportPath = $exportPath + "\" + $basefilename
 				Write-Verbose "Extracting contents to $filename"
 				$execute = "sz e $filename -o$exportPath"
 				Write-Verbose $execute
