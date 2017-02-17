@@ -2,8 +2,7 @@
 foreach ($function in (Get-ChildItem "$PSScriptRoot\functions\*.ps1")) {. $function }
 
 # Internal functions
-function Out-DataTable 
-{
+function Out-DataTable {
     <#
     .SYNOPSIS
     Creates a DataTable for an object (http://poshcode.org/2119)
@@ -28,42 +27,37 @@ function Out-DataTable
     [CmdletBinding()]
     param([Parameter(Position=0, Mandatory=$true, ValueFromPipeline = $true)] [PSObject[]]$InputObject)
 
-    Begin
-    {
-        $dt = new-object Data.datatable  
-        $First = $true 
+    BEGIN {
+        $dt = new-object Data.datatable
+        $First = $true
     }
-    Process
-    {
-        foreach ($object in $InputObject)
-        {
-            $DR = $DT.NewRow()  
-            foreach($property in $object.PsObject.get_properties())
-            {  
-                if ($first)
-                {  
-                    $Col =  new-object Data.DataColumn  
-                    $Col.ColumnName = $property.Name.ToString()  
+    PROCESS {
+        foreach ($object in $InputObject) {
+            $DR = $DT.NewRow()
+            foreach($property in $object.PsObject.get_properties()) {
+                if ($first) {
+                    $Col =  new-object Data.DataColumn
+                    $Col.ColumnName = $property.Name.ToString()
                     $DT.Columns.Add($Col)
-                }  
-                if ($property.IsArray)
-                { $DR.Item($property.Name) =$property.value | ConvertTo-XML -AS String -NoTypeInformation -Depth 1 }  
-                else { $DR.Item($property.Name) = $property.value }  
-            }  
-            $DT.Rows.Add($DR)  
+                }
+                if ($property.IsArray) {
+                    $DR.Item($property.Name) =$property.value | ConvertTo-XML -AS String -NoTypeInformation -Depth 1 
+                }
+                else { 
+                    $DR.Item($property.Name) = $property.value
+                }
+            }
+            $DT.Rows.Add($DR)
             $First = $false
         }
-    } 
-     
-    End
-    {
-        Write-Output @(,($dt))
     }
 
+    END {
+        Write-Output @(,($dt))
+    }
 }
 
-function New-SqlCn
-{
+function New-SqlCn {
     [cmdletbinding()]
     param(
         [string]$sqlserver,
@@ -72,23 +66,19 @@ function New-SqlCn
     )
 
     $sqlcn = New-Object System.Data.SqlClient.SqlConnection
-    try
-    {
-        if ($credential -ne $null)
-        {
+    try {
+        if ($credential -ne $null) {
             $username = $credential.username
             $password = $credential.password
 
-            if ($username -like "*\*")
-            {
+            if ($username -like "*\*") {
                 throw "Username $($username) looks like a Windows Account. This is not supported!!! If you are trying to run this as a different Windows Account try running the PowerShell process as that account to use this module and Windows Authentication."
             }
             $cred = New-Object System.Data.SqlClient.SqlCredential($username,$password)
             $cnString = "Data Source=$(server);Database=$($database);"
         }
-        else 
-        {
-            $cnString = "Data Source=$($server);Integrated Security=SSPI;Initial Catalog=$($database)"    
+        else {
+            $cnString = "Data Source=$($server);Integrated Security=SSPI;Initial Catalog=$($database)"
         }
 
         $sqlcn.ConnectionString = $cnString
@@ -96,19 +86,16 @@ function New-SqlCn
 
         $sqlcn.Open()
     }
-    catch
-    {
+    catch {
         $msg = $_.Exception.InnerException.InnerException
         $msg = $msg.ToString()
         throw "Can't connect to $sqlserver`: $msg"
     }
 
-    if ($sqlcn.State -eq "Open")
-    {
+    if ($sqlcn.State -eq "Open") {
         return $sqlcn
     }
-    else
-    {
+    else {
         throw "Connection was not opened properly."
     }
 }
