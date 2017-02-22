@@ -75,10 +75,10 @@ function New-SqlCn {
                 throw "Username $($username) looks like a Windows Account. This is not supported!!! If you are trying to run this as a different Windows Account try running the PowerShell process as that account to use this module and Windows Authentication."
             }
             $cred = New-Object System.Data.SqlClient.SqlCredential($username,$password)
-            $cnString = "Data Source=$(server);Database=$($database);"
+            $cnString = "Data Source=$($sqlserver);Database=$($database);"
         }
         else {
-            $cnString = "Data Source=$($server);Integrated Security=SSPI;Initial Catalog=$($database)"
+            $cnString = "Data Source=$($sqlserver);Integrated Security=SSPI;Initial Catalog=$($database)"
         }
 
         $sqlcn.ConnectionString = $cnString
