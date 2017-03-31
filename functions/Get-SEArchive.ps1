@@ -67,11 +67,12 @@ function Get-SEArchive {
 	$SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$siteName"}
 	foreach ($item in $SiteToGrab) {
 		try {
-			$source = "$SEArchiveUrl\$item"
+			$source = "$SEArchiveUrl/$item"
 			$destination = "$downloadPath\$($item.Split("/")[-1])"
 			Write-Verbose "Source path: $source"
 			Write-Verbose "Destination path: $destination"
-			Invoke-WebRequest $source -OutFile $destination
+
+			(New-Object System.Net.WebClient).DownloadFile($source,$destination)
 		}
 		catch {
 			throw "Error`: $_"
