@@ -232,8 +232,10 @@ function New-SEDatabase {
 				ON PRIMARY (NAME = $($databaseName)_data, FILENAME = '$dataPath\$($databaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
 				LOG ON (NAME = $($databaseName)_log, FILENAME='$logPath\$($databaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
 
+		$serverName = $sqlServer.Split("\")[0]
         if ($PSCmdlet.ShouldProcess($databaseName,"Create database: $databaseName")) {
-            if (!(Test-Path $dataPath) -and !(Test-Path $logPath)) {
+			$script = [scriptblock]::create( "param(`$path) & {Test-Path `$path}" )
+            if (!(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $dataPath)  -and !(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $logPath) ) {
                 throw "Paths provided for data or log are not found!"
             }
             Write-Debug $sqlDatabase

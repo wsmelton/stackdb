@@ -1,5 +1,5 @@
 function Import-SEArchive {
-    <#
+<#
 	.SYNOPSIS
 		Pulls XML dump file and bulk loads into database
 	.DESCRIPTION
@@ -40,7 +40,6 @@ function Import-SEArchive {
 
     if ( !(Test-Path $filepath) ) {
         throw "The path provided does not exist!!"
-        break;
     }
     if ($batchSize -eq 0) {
         $batchSize = 2000
@@ -49,8 +48,8 @@ function Import-SEArchive {
         $tableList = 'Badges','Comments','PostHistory','PostLinks','Posts','Tags','Users','Votes'
     }
 
-    Push-Location
-    Set-Location $filepath
+#    Push-Location
+#    Set-Location $filepath
 
     $fileList = 'Badges.xml','Comments.xml','PostHistory.xml','PostLinks.xml','Posts.xml','Tags.xml','Users.xml','Votes.xml'
 
@@ -155,5 +154,5 @@ function Import-SEArchive {
         $i++
     } #end foreach file
     $sqlcn.Close()
-    Pop-Location
+#    Pop-Location
 }
