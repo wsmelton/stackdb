@@ -1,12 +1,12 @@
 function New-SEDatabase {
-    [CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string]$sqlServer,
         [string]$databaseName,
         [string]$dataPath,
         [string]$logPath
     )
-    BEGIN {
+    begin {
         $sqlcn = New-Sqlcn -sqlserver $sqlServer
         $cmd = $sqlcn.CreateCommand()
 
@@ -197,13 +197,13 @@ function New-SEDatabase {
 				DROP TABLE dbo.Tags;
 			CREATE TABLE [dbo].[Tags] (
 				[Id] int,
-				[TagName] varchar(250),	
+				[TagName] varchar(250),
 				[Count] int NULL,
 				[ExcerptPostId] int NULL,
 				[WikiPostId] int NULL
 			);"
     }
-    PROCESS {
+    process {
         Write-Verbose "Data Path: $dataPath"
         Write-Verbose "Log Path: $logPath"
 
@@ -269,7 +269,7 @@ function New-SEDatabase {
             }
         }
     }
-    END {
+    end {
         $sqlcn.Close()
     }
 }

@@ -41,9 +41,9 @@ function Out-DataTable {
                     $DT.Columns.Add($Col)
                 }
                 if ($property.IsArray) {
-                    $DR.Item($property.Name) =$property.value | ConvertTo-XML -AS String -NoTypeInformation -Depth 1 
+                    $DR.Item($property.Name) =$property.value | ConvertTo-XML -AS String -NoTypeInformation -Depth 1
                 }
-                else { 
+                else {
                     $DR.Item($property.Name) = $property.value
                 }
             }
@@ -56,7 +56,6 @@ function Out-DataTable {
         Write-Output @(,($dt))
     }
 }
-
 function New-SqlCn {
     [cmdletbinding()]
     param(

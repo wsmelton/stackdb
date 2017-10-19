@@ -18,19 +18,19 @@ function Import-SEArchive {
         Set the batch size for the bulk copy process, default to 2000. May want to adjust when loading SO database.
 	.EXAMPLE
 	Import one table to specific schema
-    Import-SeArchive -filepath 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList Badges
+    Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList Badges
 	.EXAMPLE
 	Import multiple tables to specific schema
-	Import-SeArchive -filepath 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList 'Badges','Votes'
+	Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList 'Badges','Votes'
 	.EXAMPLE
 	Import all files into database, using default schema, and verbose logging
 	$files = Get-ChildItem 'C:\temp\quant.stackexchange.com' -filter *.xml | Select-Object -ExpandProperty BaseName
-    Import-SeArchive -filepath 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -tableList $files -Verbose
+    Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -tableList $files -Verbose
 #>
 
     [cmdletbinding()]
     param (
-        [string]$filepath,
+        [string]$folder,
         [string]$sqlserver,
         [string]$database,
         [string]$schema = 'dbo',
@@ -38,7 +38,7 @@ function Import-SEArchive {
         [int]$batchSize
     )
 
-    if ( !(Test-Path $filepath) ) {
+    if ( !(Test-Path $folder) ) {
         throw "The path provided does not exist!!"
     }
     if ($batchSize -eq 0) {
@@ -49,11 +49,11 @@ function Import-SEArchive {
     }
 
 #    Push-Location
-#    Set-Location $filepath
+#    Set-Location $folder
 
     $fileList = 'Badges.xml','Comments.xml','PostHistory.xml','PostLinks.xml','Posts.xml','Tags.xml','Users.xml','Votes.xml'
 
-    $files = Get-ChildItem -Path $filepath | Where-Object Name -in $fileList | Select-Object Name, BaseName
+    $files = Get-ChildItem -Path $folder | Where-Object Name -in $fileList | Select-Object Name, BaseName
 
     $sqlcn = New-SqlCn -sqlserver $sqlserver -database $database
 

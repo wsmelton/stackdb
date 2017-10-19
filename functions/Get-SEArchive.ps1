@@ -40,7 +40,7 @@ function Get-SEArchive {
 	}
 
 	if ($listAvailable) {
-		# Best ditch effort to try and pull down list with name, date, and size of file
+		# Best effort to try and pull down list with name, date, and size of file
 		$siteList = ($site.AllElements | Where-Object tagName -eq "body" | ForEach-Object innerText).Split("`r") | Where-Object { $_ -match "7z"}
 		if ($siteName) {
 			$sitelist = $siteList | Where-Object {$_ -match "$siteName"}
@@ -54,7 +54,10 @@ function Get-SEArchive {
 		$decision = Read-Host "Do you want to create $downloadPath (Y/N)?: "
 		if ($decision -eq 'Y') {
 			try {
-				New-Item $downloadPath -ItemType Directory -Force
+				$result = New-Item $downloadPath -ItemType Directory -Force
+				if ($result) {
+					Write-Output "$($result.FullName) created."
+				}
 			}
 			catch {
 				throw "Error`: $_"
