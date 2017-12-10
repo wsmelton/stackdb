@@ -1,81 +1,86 @@
 function Get-SEArchive {
-<#
+	<#
 	.SYNOPSIS
 		Downloads the specified 7-Zip file for the site specified
 	.DESCRIPTION
 		Downloads the Archive of the specified StackExchange network site
-	.PARAMETER siteName
+	.PARAMETER SiteName
 		String. The [siteName].stackexchange.com; with meta sites you can reference them as "meta.dba".
-    .PARAMETER downloadPath
-        String. The path to download the archive file to on your local or network directory
-	.PARAMETER listAvailable
+	.PARAMETER ListAvailable
 		Switch to just list the sites found available to download, filters when siteName provided.
+    .PARAMETER DownloadPath
+        String. The path to download the archive file to on your local or network directory
+	.PARAMETER Force
+		Switch to have download path auto created if it does not already exists.
 	.EXAMPLE
-	Download a non-meta site in StackExchange network
-    Get-SEArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
+		Get-SEArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
+		Download a non-meta site in StackExchange network
 	.EXAMPLE
-	Download a meta site in StackExchange network
-	Get-SEArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
+		Get-SEArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
+		Download a meta site in StackExchange network
 	.EXAMPLE
-	Get list of files for given site that are available, includes date and size
-	Get-SEArchive -siteName woodworking -listAvailable
+		Get-SEArchive -siteName woodworking -listAvailable
+		Get list of files for given site that are available, includes date and size
 #>
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName="Default")]
 	param (
 		[ValidateNotNull()]
-		[string]$siteName,
+		[string]$SiteName,
 		[ValidateNotNull()]
-		[string]$downloadPath,
-		[switch]$listAvailable
+		[switch]$ListAvailable,
+		[Parameter(ParameterSetName="Download")]
+		[string]$DownloadPath,
+		[Parameter(ParameterSetName="Download")]
+		[switch]$Force
 	)
 	[string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
-	$downloadPath = $downloadPath.TrimEnd("\")
-	Write-Verbose "URL being used: $SEArchiveUrl"
+	Write-Verbose "SE Archive URL: $SEArchiveUrl"
 	try {
 		$site = Invoke-WebRequest -Uri $SEArchiveUrl
 		$siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
+		Write-Verbose "Total number of files found on SE Archive: $($siteDumpList.Count)"
 	}
 	catch {
 		throw "Error`: $_"
 	}
 
-	if ($listAvailable) {
-		# Best effort to try and pull down list with name, date, and size of file
-		$siteList = ($site.AllElements | Where-Object tagName -eq "body" | ForEach-Object innerText).Split("`r") | Where-Object { $_ -match "7z"}
-		if ($siteName) {
-			$sitelist = $siteList | Where-Object {$_ -match "$siteName"}
+	if ($ListAvailable -and (-not $DownloadPath)) {
+		<# Attempt to convert file list into usable table output #>
+		$result = $site.AllElements | Where-Object tagName -eq "body" | Select-Object -ExpandProperty innerText
+		$toHash = $result.Split("`r") | ConvertFrom-String | Where-Object P2 -match "7z"
+
+		$siteList = $toHash | Select-Object @{L ="SiteName"; E= {$_.P2}}, @{L="DatePublished"; E= {$_.P3 + $_.P4}},
+		@{L="FileSize"; E= {$_.P5}}
+		if ($SiteName) {
+			$sitelist = $siteList | Where-Object SiteName -match $SiteName
 		}
 		return $siteList
 	}
 
 	# provide option to create path if it does not exist
-	if ( !(Test-Path $downloadPath -PathType Container) ) {
-		Write-Verbose "Path: $downloadPath == DOES NOT EXIST"
-		$decision = Read-Host "Do you want to create $downloadPath (Y/N)?: "
-		if ($decision -eq 'Y') {
-			try {
-				$result = New-Item $downloadPath -ItemType Directory -Force
-				if ($result) {
-					Write-Output "$($result.FullName) created."
-				}
+	if ( !(Test-Path $DownloadPath -PathType Container) -and $Force ) {
+		Write-Verbose "Creating Path: $DownloadPath"
+		try {
+			$result = New-Item $DownloadPath -ItemType Directory -Force
+			if ($result) {
+				Write-Output "$($result.FullName) created."
 			}
-			catch {
-				throw "Error`: $_"
-			}
+		}
+		catch {
+			throw "Error`: $_"
 		}
 	}
 
-	Write-Verbose "Number of files found from URL: $($siteDumpList.Count)"
-
-	$SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$siteName"}
+	$SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$SiteName"}
 	foreach ($item in $SiteToGrab) {
 		try {
 			$source = "$SEArchiveUrl/$item"
-			$destination = "$downloadPath\$($item.Split("/")[-1])"
+			$destination = "$DownloadPath\$($item.Split("/")[-1])"
 			Write-Verbose "Source path: $source"
 			Write-Verbose "Destination path: $destination"
 
-			(New-Object System.Net.WebClient).DownloadFile($source,$destination)
+			Write-Output "Downloading $source to $destination"
+			(New-Object System.Net.WebClient).DownloadFile($source, $destination)
 		}
 		catch {
 			throw "Error`: $_"
