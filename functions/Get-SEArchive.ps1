@@ -30,6 +30,7 @@ function Get-SEArchive {
 		[switch]$ListAvailable,
 		[Parameter(ParameterSetName="Download")]
 		[string]$DownloadPath,
+		[switch]$IncludeMeta,
 		[Parameter(ParameterSetName="Download")]
 		[switch]$Force
 	)
@@ -72,6 +73,9 @@ function Get-SEArchive {
 	}
 
 	$SiteToGrab = $siteDumpList | Where-Object {$_ -match "^$SiteName"}
+	if (-not $IncludeMeta) {
+		$SiteToGrab = $SiteToGrab | Where-Object {$_ -notmatch "meta"}
+	}
 	foreach ($item in $SiteToGrab) {
 		try {
 			$source = "$SEArchiveUrl/$item"
@@ -84,6 +88,6 @@ function Get-SEArchive {
 		}
 		catch {
 			throw "Error`: $_"
-		} #end try/catch
-	} #end foreach item
+		}
+	}
 }
