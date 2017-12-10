@@ -1,3 +1,6 @@
+if ( (Get-Module dbatools -ListAvailable).Count -eq 0) {
+    throw "The dbatools module was not found, please install before trying to use PSStackExchangeDb module."
+}
 # All exported functions
 foreach ($function in (Get-ChildItem "$PSScriptRoot\functions\*.ps1")) {. $function }
 
