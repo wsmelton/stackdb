@@ -10,16 +10,18 @@ function Get-SEArchive {
 		Switch to just list the sites found available to download, filters when siteName provided.
     .PARAMETER DownloadPath
         String. The path to download the archive file to on your local or network directory
+	.PARAMETER IncludeMeta
+		Switch to download meta site along with parent.
 	.PARAMETER Force
 		Switch to have download path auto created if it does not already exists.
 	.EXAMPLE
-		Get-SEArchive -siteName skeptics -downloadPath 'C:\temp\MyDumpSite'
-		Download a non-meta site in StackExchange network
+		Get-SEArchive -SiteName skeptics -DownloadPath 'C:\temp\MyDumpSite'
+		Download skeptics site data dump in StackExchange network
 	.EXAMPLE
-		Get-SEArchive -siteName meta.ell -downloadPath 'C:\temp\MyDumpSite'
-		Download a meta site in StackExchange network
+		Get-SEArchive -SiteName skeptics.meta -DownloadPath 'C:\temp\MyDumpSite'
+		Download skeptics meta data dump in StackExchange network
 	.EXAMPLE
-		Get-SEArchive -siteName woodworking -listAvailable
+		Get-SEArchive -SiteName woodworking -ListAvailable
 		Get list of files for given site that are available, includes date and size
 #>
 	[CmdletBinding(DefaultParameterSetName="Default")]
@@ -30,6 +32,7 @@ function Get-SEArchive {
 		[switch]$ListAvailable,
 		[Parameter(ParameterSetName="Download")]
 		[string]$DownloadPath,
+		[Parameter(ParameterSetName="Download")]
 		[switch]$IncludeMeta,
 		[Parameter(ParameterSetName="Download")]
 		[switch]$Force
