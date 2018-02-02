@@ -71,11 +71,11 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
-        'Expand-SEArchive',
-        'Get-SEArchive',
-        'Import-SEArchive',
-        'New-SEDatabase',
-        'New-SEDbTables'
+        'Expand-StackArchive',
+        'Get-StackArchive',
+        'Import-StackArchive',
+        'New-StackDatabase',
+        'New-StackDbTables'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

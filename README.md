@@ -6,7 +6,7 @@ Write-up and example of module can be found [here](http://blog.wsmelton.info/sta
 
 ## ToDo
 
-- Rename module to `StackDb`
+- Rename module to `StackDb` [Done 02/02/2018].
 - Rename functions to prefix just `Stack` instead of `SE`
 - Add [PSFramework](https://github.com/PowershellFrameworkCollective/psframework)
 - Implement features of PSFramework

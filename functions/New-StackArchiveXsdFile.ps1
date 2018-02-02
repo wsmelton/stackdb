@@ -1,4 +1,4 @@
-function New-SEArchiveXsdFile {
+function New-StackArchiveXsdFile {
 <#
 	.SYNOPSIS
 		Pulls XML file and generates a XSD file.
@@ -12,7 +12,7 @@ function New-SEArchiveXsdFile {
         Overwrite the current XSD file.
 	.EXAMPLE
 	Generate XSD file for the Badges.XML
-    New-SEArchiveXsdFile -xmlFile 'C:\temp\quant.stackexchange.com\Badges.xml' -xsdFile 'C:\temp\quant.stackexchange.com\Badges.xsd'
+    New-StackArchiveXsdFile -xmlFile 'C:\temp\quant.stackexchange.com\Badges.xml' -xsdFile 'C:\temp\quant.stackexchange.com\Badges.xsd'
 
     .NOTES
     Genearl sources used for generate this code and why it would be useful.

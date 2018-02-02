@@ -1,4 +1,4 @@
-function Get-SEArchive {
+function Get-StackArchive {
 	<#
 	.SYNOPSIS
 		Downloads the specified 7-Zip file for the site specified
@@ -15,13 +15,13 @@ function Get-SEArchive {
 	.PARAMETER Force
 		Switch to have download path auto created if it does not already exists.
 	.EXAMPLE
-		Get-SEArchive -SiteName skeptics -DownloadPath 'C:\temp\MyDumpSite'
+		Get-StackArchive -SiteName skeptics -DownloadPath 'C:\temp\MyDumpSite'
 		Download skeptics site data dump in StackExchange network
 	.EXAMPLE
-		Get-SEArchive -SiteName skeptics.meta -DownloadPath 'C:\temp\MyDumpSite'
+		Get-StackArchive -SiteName skeptics.meta -DownloadPath 'C:\temp\MyDumpSite'
 		Download skeptics meta data dump in StackExchange network
 	.EXAMPLE
-		Get-SEArchive -SiteName woodworking -ListAvailable
+		Get-StackArchive -SiteName woodworking -ListAvailable
 		Get list of files for given site that are available, includes date and size
 #>
 	[CmdletBinding(DefaultParameterSetName="Default")]

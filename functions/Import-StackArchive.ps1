@@ -1,4 +1,4 @@
-function Import-SEArchive {
+function Import-StackArchive {
 <#
 	.SYNOPSIS
 		Pulls XML dump file and bulk loads into database
@@ -18,14 +18,14 @@ function Import-SEArchive {
         Set the batch size for the bulk copy process, default to 2000. May want to adjust when loading SO database.
 	.EXAMPLE
 	Import one table to specific schema
-    Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList Badges
+    Import-StackArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList Badges
 	.EXAMPLE
 	Import multiple tables to specific schema
-	Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList 'Badges','Votes'
+	Import-StackArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -schema quant -tableList 'Badges','Votes'
 	.EXAMPLE
 	Import all files into database, using default schema, and verbose logging
 	$files = Get-ChildItem 'C:\temp\quant.stackexchange.com' -filter *.xml | Select-Object -ExpandProperty BaseName
-    Import-SeArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -tableList $files -Verbose
+    Import-StackArchive -folder 'C:\temp\quant.stackexchange.com' -server MANATARMS\SQL12 -database StackExchange -tableList $files -Verbose
 #>
 
     [cmdletbinding()]

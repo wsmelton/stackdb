@@ -1,4 +1,4 @@
-function Expand-SEArchive {
+function Expand-StackArchive {
 	<#
 	.SYNOPSIS
 		Uses 7-Zip to list and extract a zipped file with extension *.7z
@@ -14,10 +14,10 @@ function Expand-SEArchive {
 		Will list the contents of the zipped file
 	.EXAMPLE
 	List contents of the MyZippedFile.7z file
-    Expand-SEArchive -FileName 'C:\Temp\MyZippedFile.7z' -List
+    Expand-StackArchive -FileName 'C:\Temp\MyZippedFile.7z' -List
 	.EXAMPLE
 	Export contents of MyZippedFile.7z to C:\Temp\MyFolder
-	Expand-SEArchive -FileName 'C:\Temp\MyZippedFIle.7z' -exportPath 'C:\Temp\MyFolder'
+	Expand-StackArchive -FileName 'C:\Temp\MyZippedFIle.7z' -exportPath 'C:\Temp\MyFolder'
 #>
 	[CmdletBinding()]
 	param (

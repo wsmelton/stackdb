@@ -1,4 +1,4 @@
-function New-SEDatabase {
+function New-StackDatabase {
 	[CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
 	param(
 		[string]$SqlServer,
