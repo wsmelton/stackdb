@@ -1,23 +1,47 @@
 function New-StackDatabase {
-	[CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
-	param(
-		[string]$SqlServer,
-		[string]$Database,
-		[string]$DataPath,
-		[string]$LogPath
-	)
-	begin {
-		$sqlDbRecoveryModel = "ALTER DATABASE $databaseName SET RECOVERY SIMPLE;"
+    <#
+		.SYNOPSIS
+			Create a new stack exchange database
 
-		$tables = @{
-			PostTypeIdDesc        = "
+		.DESCRIPTION
+			Creates a database in SQL Server and all the tables that will be used to load the data archive.
+
+		.PARAMETER SqlServer
+			SQL Server instance to connect.
+
+		.PARAMETER DatabaseName
+			Name of the database to create.
+
+		.PARAMETER UseDefaultPath
+			Switch to utilize the default data and log path of the SQL Server instance.
+
+		.PARAMETER FileMapping
+			Hashtable of the data and log file mapping
+
+		.EXAMPLE
+			An example
+
+		.NOTES
+			General notes
+	#>
+    [CmdletBinding(DefaultParameterSetName = "Default", SupportsShouldProcess = $true)]
+    param(
+        [string]$SqlServer,
+        [PSCredential]$SqlCredential,
+        [string]$DatabaseName,
+        [switch]$UseDefaultPath,
+        [object]$FileMapping
+    )
+    begin {
+        $tables = @{
+            PostTypeIdDesc        = "
 				IF (OBJECT_ID('dbo.PostsTypeIdDesc') IS NOT NULL)
 					DROP TABLE dbo.PostsTypeIdDesc;
 				CREATE TABLE [dbo].[PostsTypeIdDesc] (
 					[PostTypeId] int,[Description] varchar(10));
 				INSERT INTO [dbo].[PostsTypeIdDesc] (PostTypeId,Description)
 				VALUES (1,'Question'), (2,'Answer');";
-			CloseReasonIdDesc     = "
+            CloseReasonIdDesc     = "
 				IF (OBJECT_ID('dbo.CloseReasonIdDesc') IS NOT NULL)
 					DROP TABLE dbo.CloseReasonIdDesc;
 				CREATE TABLE [dbo].[CloseReasonIdDesc] (
@@ -25,7 +49,7 @@ function New-StackDatabase {
 				INSERT INTO [dbo].[CloseReasonIdDesc](CloseReasonId,Description)
 				VALUES (1,'Exact Duplicate - This question covers exactly the same ground as earlier questions on this topic; its answers may be merged with another identical question.'),(2,'off-topic'),(3,'subjective'),
 				(4,'not a real question'),(7,'too localized');";
-			PostHistoryTypeIdDesc = "
+            PostHistoryTypeIdDesc = "
 				IF (OBJECT_ID('dbo.PostHistoryTypeIdDesc') IS NOT NULL)
 					DROP TABLE dbo.PostHistoryTypeIdDesc;
 				CREATE TABLE [dbo].[PostHistoryTypeIdDesc] (
@@ -53,7 +77,7 @@ function New-StackDatabase {
 				(20,'Question Unprotected - A question was unprotected by a moderator'),
 				(21,'Post Disassociated - An admin removes the OwnerUserId from a post.'),
 				(22,'Question Unmerged - A previously merged question has had its answers and votes restored.')";
-			VoteTypeIdDesc        = "
+            VoteTypeIdDesc        = "
 				IF OBJECT_ID('dbo.VoteTypeIdDesc') IS NOT NULL
 					DROP TABLE dbo.VoteTypeIdDesc;
 				CREATE TABLE [dbo].[VoteTypeIdDesc] (
@@ -64,25 +88,25 @@ function New-StackDatabase {
 				(5,'Favorite - if VoteTypeId = 5 UserId will be populated'),
 				(6,'Close'),(7,'Reopen'),(8,'BountyStart'),(9,'BountyClose'),
 				(10,'Deletion'),(11,'Undeletion'),(12,'Spam'),(13,'InformModerator');";
-			PostLinkTypeIdDesc    = "
+            PostLinkTypeIdDesc    = "
 				IF OBJECT_ID('dbo.PostLinkTypeIdDesc') IS NOT NULL
 					DROP TABLE dbo.PostLinkTypeIdDesc;
 				CREATE TABLE [dbo].[PostLinkTypeIdDesc] (
 					[PostLinkTypeId] int,[Description] varchar(10));
 				INSERT INTO [dbo].[PostLinkTypeIdDesc] (PostLinkTypeId, Description)
 				VALUES (1,'Linked'), (3,'Duplicate');";
-			Badges                = "
+            Badges                = "
 				IF OBJECT_ID('dbo.Badges') IS NOT NULL
 					DROP TABLE dbo.Badges;
 				CREATE TABLE [dbo].[Badges] (
 					[UserId] int,[Name] varchar(500) NULL,[Date] datetime NULL);";
-			Comments              = "
+            Comments              = "
 				IF OBJECT_ID('dbo.Comments') IS NOT NULL
 					DROP TABLE dbo.Comments;
 				CREATE TABLE [dbo].[Comments] (
 					[Id] int,[PostId] int NULL,[Score] int NULL,
 					[Text] varchar(600) NULL,[CreationDate] datetime NULL,[UserId] int NULL);";
-			Posts                 = "
+            Posts                 = "
 				IF OBJECT_ID('dbo.Posts') IS NOT NULL
 					DROP TABLE dbo.Posts;
 				CREATE TABLE [dbo].[Posts] (
@@ -96,7 +120,7 @@ function New-StackDatabase {
 					[ClosedDate] datetime NULL,[Title] varchar(150) NULL,
 					[Tags] varchar(150) NULL,[AnswerCount] int NULL,
 					[CommentCount] int NULL,[FavoriteCount] int NULL);";
-			PostHistory           = "
+            PostHistory           = "
 				IF OBJECT_ID('dbo.PostHistory') IS NOT NULL
 					DROP TABLE dbo.PostHistory;
 				CREATE TABLE [dbo].[PostHistory] (
@@ -106,14 +130,14 @@ function New-StackDatabase {
 					[UserId] int NULL,[UserDisplayName] varchar(150) NULL,
 					[Comment] nvarchar(max) NULL,[Text] nvarchar(max) NULL,
 					[CloseReasonId] int NULL);";
-			PostLinks             = "
+            PostLinks             = "
 				IF OBJECT_ID('dbo.PostLinks') IS NOT NULL
 					DROP TABLE dbo.PostLinks;
 				CREATE TABLE [dbo].[PostLinks] (
 					[Id] int,[CreationDate] datetime NULL,
 					[PostId] int NULL,[RelatedPostId] int NULL,
 					[PostLinkTypeId] int NULL);";
-			Users                 = "
+            Users                 = "
 				IF OBJECT_ID('dbo.Users') IS NOT NULL
 					DROP TABLE dbo.Users;
 				CREATE TABLE [dbo].[Users] (
@@ -123,87 +147,92 @@ function New-StackDatabase {
 					[Location] varchar(250) NULL,[Age] int NULL,
 					[AboutMe] varchar(max) NULL,[Views] int NULL,
 					[UpVotes] int NULL,[DownVotes] int NULL);";
-			Votes                 = "
+            Votes                 = "
 				IF OBJECT_ID('dbo.Votes') IS NOT NULL
 					DROP TABLE dbo.Votes;
 				CREATE TABLE [dbo].[Votes] (
 					[Id] int,[PostId] int NULL,[VoteTypeId] int NULL,
 					[CreationDate] datetime,[UserId] int NULL,
 					[BountyAmount] int NULL);";
-			Tags                  = "
+            Tags                  = "
 				IF OBJECT_ID('dbo.Tags') IS NOT NULL
 					DROP TABLE dbo.Tags;
 				CREATE TABLE [dbo].[Tags] ([Id] int,[TagName] varchar(250),
 				[Count] int NULL,[ExcerptPostId] int NULL,[WikiPostId] int NULL);";
-		}
-	}
-	process {
-		Write-Verbose "Data Path: $dataPath"
-		Write-Verbose "Log Path: $logPath"
+        }
+    }
+    process {
+        Write-PSFMessage -Level Verbose -Message "Connecting to $SqlServer"
+        $instance = Connect-DbaInstance -SqlInstance $SqlServer -SqlCredential $SqlCredential
 
-		$sql = "
+        # Get default path of instance something
+
+		Write-Verbose "Data Path: $dataPath"
+        Write-Verbose "Log Path: $logPath"
+
+        $sql = "
 			SELECT DefaultDataPath = SERVERPROPERTY('InstanceDefaultDataPath'),
 				DefaultLogPath = SERVERPROPERTY('InstanceDefaultLogPath')"
-		$cmd.CommandText = $sql
-		$adp = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-		$data = New-Object System.Data.DataSet
-		$null = $adp.Fill($data)
-		$rows = $data.Tables[0].Rows
-		$defaultDataPath = $rows.DefaultDataPath
-		$defaultLogPath = $rows.DefaultLogPath
-		if ($dataPath.Length -eq 0) {
-			$dataPath = $defaultDataPath
-		}
-		if ($logPath.Length -eq 0) {
-			$logPath = $defaultLogPath
-		}
+        $cmd.CommandText = $sql
+        $adp = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
+        $data = New-Object System.Data.DataSet
+        $null = $adp.Fill($data)
+        $rows = $data.Tables[0].Rows
+        $defaultDataPath = $rows.DefaultDataPath
+        $defaultLogPath = $rows.DefaultLogPath
+        if ($dataPath.Length -eq 0) {
+            $dataPath = $defaultDataPath
+        }
+        if ($logPath.Length -eq 0) {
+            $logPath = $defaultLogPath
+        }
 
-		$dataPath = $dataPath.TrimEnd("\")
-		$logPath = $logPath.TrimEnd("\")
+        $dataPath = $dataPath.TrimEnd("\")
+        $logPath = $logPath.TrimEnd("\")
 
-		$sqlDatabase = "
+        $sqlDatabase = "
 			CREATE DATABASE $databaseName
 				ON PRIMARY (NAME = $($databaseName)_data, FILENAME = '$dataPath\$($databaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
 				LOG ON (NAME = $($databaseName)_log, FILENAME='$logPath\$($databaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
 
-		$serverName = $sqlServer.Split("\")[0]
-		if ($PSCmdlet.ShouldProcess($databaseName, "Create database: $databaseName")) {
-			$script = [scriptblock]::create( "param(`$path) & {Test-Path `$path}" )
-			if (!(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $dataPath)  -and !(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $logPath) ) {
-				throw "Paths provided for data or log are not found!"
-			}
-			Write-Debug $sqlDatabase
-			$cmd.CommandText = $sqlDatabase
-			try {
-				$null = $cmd.ExecuteNonQuery()
-			}
-			catch {
-				throw "Error`: $_"
-			}
-			Write-Output "[Database] $databaseName Created"
-		}
-		if ($PSCmdlet.ShouldProcess($databaseName, "Adjusted recovery model")) {
-			try {
-				$cmd.CommandText = $sqlDbRecoveryModel
-				$null = $cmd.ExecuteNonQuery()
-			}
-			catch {
-				throw "Error`: $_"
-			}
-			Write-Output "[Database] $databaseName set to SIMPLE recovery";
-		}
-		if ($PSCmdlet.ShouldProcess($databaseName, "Build SE tables")) {
-			try {
-				$sqlcn.ChangeDatabase($databaseName)
-				$cmd.CommandText = $sqlTables
-				$null = $cmd.ExecuteNonQuery()
-			}
-			catch {
-				throw "Error`: $_"
-			}
-		}
-	}
-	END {
-		$sqlcn.Close()
-	}
+        $serverName = $sqlServer.Split("\")[0]
+        if ($PSCmdlet.ShouldProcess($databaseName, "Create database: $databaseName")) {
+            $script = [scriptblock]::create( "param(`$path) & {Test-Path `$path}" )
+            if (!(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $dataPath)  -and !(Invoke-Command -ComputerName $serverName -ScriptBlock $script -ArgumentList $logPath) ) {
+                throw "Paths provided for data or log are not found!"
+            }
+            Write-Debug $sqlDatabase
+            $cmd.CommandText = $sqlDatabase
+            try {
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+            Write-Output "[Database] $databaseName Created"
+        }
+        if ($PSCmdlet.ShouldProcess($databaseName, "Adjusted recovery model")) {
+            try {
+                $cmd.CommandText = $sqlDbRecoveryModel
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+            Write-Output "[Database] $databaseName set to SIMPLE recovery";
+        }
+        if ($PSCmdlet.ShouldProcess($databaseName, "Build SE tables")) {
+            try {
+                $sqlcn.ChangeDatabase($databaseName)
+                $cmd.CommandText = $sqlTables
+                $null = $cmd.ExecuteNonQuery()
+            }
+            catch {
+                throw "Error`: $_"
+            }
+        }
+    }
+    END {
+        $sqlcn.Close()
+    }
 }
