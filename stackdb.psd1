@@ -30,10 +30,10 @@
     Copyright = '(c) 2016 Shawn Melton. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Module to build SQL Server database based on StackExchange Archives'
+    Description = 'Module to create an SQL Server database from StackExchange Archives'
 
     # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = '3.0'
+    PowerShellVersion = '4.0'
 
     # Name of the Windows PowerShell host required by this module
     # PowerShellHostName = ''
@@ -51,8 +51,10 @@
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    # RequiredModules = @(
-    # )
+    RequiredModules   = @(
+        @{ ModuleName = 'dbatools'; ModuleVersion = '0.9.190' }
+        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.0.9.19' }
+    )
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -100,12 +102,14 @@
     PrivateData = @{
 
         PSData = @{
+            # The primary categorization of this module.
+            Category   = "Databases"
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            # Tags = @()
+            Tags       = @('sqlserver', 'sql', 'databases', 'stackexchange')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://opensource.org/licenses/MIT'
 
             # A URL to the main website for this project.
             # ProjectUri = ''
@@ -115,6 +119,9 @@
 
             # ReleaseNotes of this module
             # ReleaseNotes = ''
+
+            # Indicates this is a pre-release/testing version of the module
+            IsPrerelease = 'True'
 
         } # End of PSData hashtable
 
