@@ -182,6 +182,7 @@ function New-StackDatabase {
         }
         catch {
             Stop-PSFFunction -Message "Failure" -Category ConnectionError -Target $SqlServer -ErrorRecord $_
+            return
         }
 
         if ($UseDefaultPath -or (-not $DataPath -or -not $LogPath)) {
@@ -197,7 +198,7 @@ function New-StackDatabase {
             $defaultLog = $defaultLog.TrimEnd("\")
         }
 
-        if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating database: $DatabaseName")) {
+        if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating the database")) {
             if (Test-PSFParameterBinding 'DataPath') {
                 $defaultData = $DataPath.TrimEnd("\")
             }
@@ -219,11 +220,10 @@ function New-StackDatabase {
             Write-PSFMessage -Level Output -Message "$DatabaseName created on $instance"
         }
 
-        if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating base tables.")) {
-            foreach ($table in $tables.Keys) {
+        foreach ($table in $tables.Keys) {
+            if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating table $($table)")) {
                 $query = $tables[$table]
                 Write-PSFMessage -Level Debug -Message "SQL Statement for $($table): `n$query"
-                Write-PSFMessage -Level Verbose -Message "Creating table: $table"
                 try {
                     $instance.Databases.Refresh()
                     $instance.Databases[$DatabaseName].Query($query)
