@@ -178,7 +178,7 @@ function New-StackDatabase {
         Write-PSFMessage -Level Verbose -Message "Connecting to $SqlServer"
 
         try {
-            $instance = Connect-DbaInstance -SqlInstance $SqlServer -SqlCredential $SqlCredential
+            $instance = Connect-DbaInstance -SqlInstance $SqlServer -SqlCredential $SqlCredential -ClientName "StackDb PowerShell Module - StackExchange Archive"
         }
         catch {
             Stop-PSFFunction -Message "Failure" -Category ConnectionError -Target $SqlServer -ErrorRecord $_
