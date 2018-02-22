@@ -106,7 +106,7 @@
             Category   = "Databases"
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('sqlserver', 'sql', 'databases', 'stackexchange')
+            Tags       = @('sqlserver', 'sql', 'databases', 'stackexchange','stackoverflow')
 
             # A URL to the license for this module.
             LicenseUri = 'https://opensource.org/licenses/MIT'
