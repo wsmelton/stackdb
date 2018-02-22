@@ -38,11 +38,11 @@ function Get-StackArchive {
 		[switch]$Force
 	)
 	[string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
-	Write-Verbose "SE Archive URL: $SEArchiveUrl"
+    Write-PSFMessage -Level Verbose -Message "SE Archive URL: $SEArchiveUrl"
 	try {
 		$site = Invoke-WebRequest -Uri $SEArchiveUrl
 		$siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
-		Write-Verbose "Total number of files found on SE Archive: $($siteDumpList.Count)"
+        Write-PSFMessage -Level Verbose -Message "Total number of files found on SE Archive: $($siteDumpList.Count)"
 	}
 	catch {
 		throw "Error`: $_"

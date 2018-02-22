@@ -9,7 +9,7 @@
 @{
 
     # Script module or binary module file associated with this manifest.
-    RootModule = 'PSStackExchangeDb.psm1'
+    RootModule = 'stackdb.psm1'
 
     # Version number of this module.
     ModuleVersion = '0.5.0'
@@ -52,8 +52,8 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules   = @(
-        @{ ModuleName = 'dbatools'; ModuleVersion = '0.9.190' }
-        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.0.9.19' }
+        @{ ModuleName = 'dbatools'; ModuleVersion = '0.9.194' }
+        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.9.19' }
     )
 
     # Assemblies that must be loaded prior to importing this module
