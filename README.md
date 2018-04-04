@@ -2,14 +2,13 @@
 
 PowerShell module to build an SQL Server database(s) from the [StackExchange Archives](https://archive.org/details/stackexchange). You can use this to create the database, tables and then import the data.
 
-Write-up and example of module can be found [here](http://blog.wsmelton.info/stackexchange/).
-
 ## ToDo
 
-- Rename module to `StackDb` [Done 02/02/2018].
-- Rename functions to prefix just `Stack` instead of `SE` [Done February 2018]
-- Add [PSFramework](https://github.com/PowershellFrameworkCollective/psframework) [Done 02/13/2018]
-- Implement features of PSFramework [Done 02/13/2018]
 - Tests, tests, tests
-- Build out CI with (VSTS, GitHub and Appveyor once test are written](https://docs.microsoft.com/en-us/vsts/build-release/actions/ci-build-github)
+- Build out CI with (VSTS](https://docs.microsoft.com/en-us/vsts/build-release/actions/ci-build-github)
 - Part of CI with VSTS implement push to PS Gallery.
+- Build out `Invoke-StackDatabase`, wrapper function that calls all supported commands in proper sequence. Can use splatting to handle all the parameters that will be required.
+    1. Get-StackArchive
+    2. Expand-StackArchive
+    3. New-StackDatabase (deal with if database does not exist, or if it does and tables don't)
+    4. Import-StackArchive (all of it)
