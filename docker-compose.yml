@@ -1,0 +1,16 @@
+version: '3.2'
+
+services:
+  sql2017:
+    container_name: 'SqlTest'
+    image:
+      microsoft/mssql-server-windows-developer:2017-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword12345
+    ports:
+      - '1417:1433'
+    volumes:
+      - type: 'bind'
+        source: 'C:\sqlfiles'
+        target: 'C:\sqlfiles'
