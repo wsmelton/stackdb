@@ -7,7 +7,7 @@ function Expand-StackArchive {
             Utilizes alias "sz" created within the module StackExchange that calls CLI of 7-Zip
 
         .PARAMETER 7zPath
-            Path to the 7z.exe from 7-Zip, defaults to the ProfileFiles environment variable path
+            Path to the 7z.exe from 7-Zip, defaults to the ProgramFiles environment variable path
 
         .PARAMETER ExportPath
             Destination for expanding contents of 7z file.
