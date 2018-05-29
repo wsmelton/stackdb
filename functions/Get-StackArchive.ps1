@@ -37,29 +37,32 @@ function Get-StackArchive {
 		[Parameter(ParameterSetName="Download")]
 		[switch]$Force
 	)
-	[string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
+    [string]$SEArchiveUrl = 'https://archive.org/download/stackexchange'
+	[string]$siteXmlUrl = 'https://archive.org/download/stackexchange/Sites.xml'
     Write-PSFMessage -Level Verbose -Message "SE Archive URL: $SEArchiveUrl"
-	try {
-		$site = Invoke-WebRequest -Uri $SEArchiveUrl
-		$siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
+    try {
+        $site = Invoke-WebRequest -Uri $SEArchiveUrl -UseBasicParsing
+        $siteDumpList = ($site.Links | Where-Object innerHtml -match "7z").innerText
         Write-PSFMessage -Level Verbose -Message "Total number of files found on SE Archive: $($siteDumpList.Count)"
-	}
-	catch {
-		throw "Error`: $_"
-	}
+    }
+    catch {
+		Write-PSFMessage -Level Error -Message "Issue getting content from $SEArchiveURL" -ErrorRecord $_ -Target "SEArchiveUrl"
+    }
 
-	if ($ListAvailable -and (-not $DownloadPath)) {
-		<# Attempt to convert file list into usable table output #>
-		$result = $site.AllElements | Where-Object tagName -eq "body" | Select-Object -ExpandProperty innerText
-		$toHash = $result.Split("`r") | ConvertFrom-String | Where-Object P2 -match "7z"
+    if ($ListAvailable -and (-not $DownloadPath)) {
+        [xml]$siteXml = (New-Object System.Net.WebClient).DownloadString($siteXmlUrl)
+		$siteXml.Sites.Row | Select-Object TinyName, Name, LongName, Url, ImageUrl, IconUrl, DatabaseName, TotalQuestions, TotalAnswers, TotalUsers, TotalComments, TotalTags, LastPost
+        <# Attempt to convert file list into usable table output #>
+        $result = $site.AllElements | Where-Object tagName -eq "body" | Select-Object -ExpandProperty innerText
+        $toHash = $result.Split("`r") | ConvertFrom-String | Where-Object P2 -match "7z"
 
-		$siteList = $toHash | Select-Object @{L ="SiteName"; E= {$_.P2}}, @{L="DatePublished"; E= {$_.P3 + $_.P4}},
-		@{L="FileSize"; E= {$_.P5}}
-		if ($SiteName) {
-			$sitelist = $siteList | Where-Object SiteName -match $SiteName
-		}
-		return $siteList
-	}
+        $siteList = $toHash | Select-Object @{L ="SiteName"; E= {$_.P2}}, @{L="DatePublished"; E= {$_.P3 + $_.P4}},
+        @{L="FileSize"; E= {$_.P5}}
+        if ($SiteName) {
+            $sitelist = $siteList | Where-Object SiteName -match $SiteName
+        }
+        return $siteList
+    }
 
 	# provide option to create path if it does not exist
 	if ( !(Test-Path $DownloadPath -PathType Container) -and $Force ) {
