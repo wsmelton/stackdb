@@ -2,6 +2,10 @@
 
 PowerShell module to build an SQL Server database(s) from the [StackExchange Archives](https://archive.org/details/stackexchange). You can use this to create the database, tables and then import the data.
 
+<img align="left" src="https://wshawnmelton.visualstudio.com/_apis/public/build/definitions/640c5abb-34bd-4423-9e10-8f7e92e7f918/2/badge"> Dev Build Status
+<img align="left" src="https://wshawnmelton.visualstudio.com/_apis/public/build/definitions/640c5abb-34bd-4423-9e10-8f7e92e7f918/1/badge"> CI Status
+<img align="left" src="https://wshawnmelton.vsrm.visualstudio.com/_apis/public/Release/badge/640c5abb-34bd-4423-9e10-8f7e92e7f918/1/1)"> Release Status
+
 ## ToDo
 
 - Tests, tests, tests
