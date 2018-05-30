@@ -12,7 +12,7 @@
     RootModule = 'stackdb.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.5.0'
+    ModuleVersion = '0.6.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -75,6 +75,8 @@
     FunctionsToExport = @(
         'Expand-StackArchive',
         'Get-StackArchive',
+        'Get-StackdbConfig',
+        'Get-StackdbConfigValue',
         'Import-StackArchive',
         'New-StackDatabase',
         'New-StackDbTables'
