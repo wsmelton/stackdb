@@ -42,7 +42,7 @@ function Import-StackArchive {
 
             Import all data from quant archive into the database StackExchange on SQL12.
     #>
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [string]$Folder,
         [string]$SqlServer,
