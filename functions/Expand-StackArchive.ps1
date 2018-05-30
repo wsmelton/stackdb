@@ -5,9 +5,7 @@ function Expand-StackArchive {
 
         .DESCRIPTION
             Utilizes alias "sz" created within the module StackExchange that calls CLI of 7-Zip
-
-        .PARAMETER 7zPath
-            Path to the 7z.exe from 7-Zip, defaults to the ProgramFiles environment variable path
+            The path to 7zip program executable is set in the module config (Get-StackdbConfig)
 
         .PARAMETER ExportPath
             Destination for expanding contents of 7z file.
@@ -29,14 +27,13 @@ function Expand-StackArchive {
     #>
     [CmdletBinding()]
     param (
-        [string]$7zPath = "$env:ProgramFiles\7-Zip\7z.exe",
         [string]$FileName,
         [string]$ExportPath,
         [switch]$List
     )
     begin {
         if (Test-Path $7zPath) {
-            Set-Alias sz $7zPath -Scope Local
+            Set-Alias szStackdb $7zPath -Scope Local
         }
         else {
             Stop-PSFFunction -Message "7-zip executable not found"
@@ -49,14 +46,14 @@ function Expand-StackArchive {
     process {
         if (Test-Path $FileName) {
             if ($List) {
-                sz l $FileName
+                szStackdb l $FileName
             }
             else {
                 $baseFileName = (Get-ChildItem $FileName).BaseName.TrimEnd(".7z")
                 $ExportPath = $ExportPath + "\" + $baseFileName
                 Write-PSFMessage -Level Verbose -Message "Extracting contents to $FileName"
-                $execute = "sz e $FileName -aoa -bb0 -o$ExportPath"
-                Write-PSFMessage -Level Debug -Message "invoking: $execute"
+                $execute = "szStackdb e $FileName -aoa -bb0 -o$ExportPath"
+                Write-PSFMessage -Level Debug -Message "Invoking: $execute"
                 Write-PSFMessage -Level Verbose -Message "Extracting $FileName"
                 Invoke-Expression $execute
             }
@@ -64,6 +61,6 @@ function Expand-StackArchive {
         else {
             Stop-PSFFunction -Message "[$FileName] File not found"
         }
-        Remove-Item alias:\sz -force
+        Remove-Item alias:\szStackdb -force
     }
 }
