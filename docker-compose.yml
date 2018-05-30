@@ -1,0 +1,59 @@
+version: '3.2'
+
+services:
+
+  sql2017:
+    container_name: 'sql2017'
+    image:
+      microsoft/mssql-server-windows-developer:2017-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword12345
+    ports:
+      - '1417:1433'
+    volumes:
+      - type: 'bind'
+        source: 'C:\sqlfiles\sql17'
+        target: 'C:\sqlfiles'
+
+  sql2016:
+    container_name: 'sql2016'
+    image:
+      dbafromthecold/sqlserver2016dev:sp1
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword12345
+    ports:
+      - '1416:1433'
+    volumes:
+      - type: 'bind'
+        source: 'C:\sqlfiles\sql16'
+        target: 'C:\sqlfiles'
+
+  sql2014:
+    container_name: 'sql2014'
+    image:
+      dbafromthecold/sqlserver2014dev:sp2
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword12345
+    ports:
+      - '1414:1433'
+    volumes:
+      - type: 'bind'
+        source: 'C:\sqlfiles\sql14'
+        target: 'C:\sqlfiles'
+
+  sql2012:
+    container_name: 'sql2012'
+    image:
+      dbafromthecold/sqlserver2012dev:sp4
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword12345
+    ports:
+      - '1412:1433'
+    volumes:
+      - type: 'bind'
+        source: 'C:\sqlfiles\sql12'
+        target: 'C:\sqlfiles'

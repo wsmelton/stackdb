@@ -12,7 +12,7 @@
     RootModule = 'stackdb.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.5.0'
+    ModuleVersion = '0.6.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -52,8 +52,8 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules   = @(
-        @{ ModuleName = 'dbatools'; ModuleVersion = '0.9.194' }
-        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.9.19' }
+        @{ ModuleName = 'dbatools'; ModuleVersion = '0.9.338' }
+        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.19.55' }
     )
 
     # Assemblies that must be loaded prior to importing this module
@@ -75,6 +75,8 @@
     FunctionsToExport = @(
         'Expand-StackArchive',
         'Get-StackArchive',
+        'Get-StackdbConfig',
+        'Get-StackdbConfigValue',
         'Import-StackArchive',
         'New-StackDatabase',
         'New-StackDbTables'
