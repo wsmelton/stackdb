@@ -63,7 +63,6 @@ function Expand-StackArchive {
         }
         else {
             Stop-PSFFunction -Message "[$FileName] File not found"
-            return
         }
         Remove-Item alias:\sz -force
     }
