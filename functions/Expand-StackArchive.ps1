@@ -44,6 +44,7 @@ function Expand-StackArchive {
         }
     }
     process {
+        if (Test-PSFFunctionInterrupt) {return}
         if (Test-Path $FileName) {
             if ($List) {
                 szStackdb l $FileName
