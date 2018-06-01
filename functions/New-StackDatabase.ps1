@@ -46,9 +46,6 @@ function New-StackDatabase {
         [string]$LogPath
     )
     begin {
-        if (Test-PSFParameterBinding 'UseDefaultPath' -Not) {
-            $UseDefaultPath = $true
-        }
         $tables = @{
             PostTypeIdDesc        = "
                 IF (OBJECT_ID('dbo.PostsTypeIdDesc') IS NOT NULL)
@@ -188,9 +185,9 @@ function New-StackDatabase {
             return
         }
 
-        if ($UseDefaultPath) {
+        if (Test-PSFParameterBinding 'UseDefaultPath') {
             # Get default path of instance something
-            $sqlProps = Get-DbaSqlInstanceProperty -SqlInstance $instance -InstanceProperty DefaultFile
+            $sqlProps = Get-DbaSqlInstanceProperty -SqlInstance $instance -InstanceProperty DefaultFile,DefaultLog
             $defaultData = $sqlProps.Where( {$_.Name -eq 'DefaultFile'} ).Value
             $defaultLog = $sqlProps.Where( {$_.Name -eq 'DefaultLog'} ).Value
 
@@ -207,8 +204,16 @@ function New-StackDatabase {
         }
 
         if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating the database")) {
+            <# One last check to see if the data path is there #>
+            if ( (Test-DbaSqlPath -SqlInstance $instance -Path $defaultData) -eq $false ) {
+                Write-PSFMessage -Level Warning -Message "$defaultData is not accessible"
+            }
+            if ( (Test-DbaSqlPath -SqlInstance $instance -Path $defaultLog) -eq $false ) {
+                Write-PSFMessage -Level Warning -Message "$defaultLog is not accessible"
+            }
+
             $query = "CREATE DATABASE [$DatabaseName] ON PRIMARY
-                (NAME = $($DatabaseName)_data, FILENAME = '$defaultData\$($DatabaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
+                (NAME = $($DatabaseName)_data, FILENAME = '$($defaultData)\$($DatabaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
                 LOG ON (NAME = $($DatabaseName)_log, FILENAME='$defaultLog\$($DatabaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
             Write-PSFMessage -Level Debug -Message "SQL Statement: `n$query"
 
