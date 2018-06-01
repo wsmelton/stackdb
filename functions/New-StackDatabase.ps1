@@ -205,7 +205,7 @@ function New-StackDatabase {
             if (Test-PSFParameterBinding 'LogPath') {
                 $defaultLog = $LogPath.TrimEnd("\")
             }
-            $query = "CREATE DATABASE $DatabaseName ON PRIMARY
+            $query = "CREATE DATABASE [$DatabaseName] ON PRIMARY
                 (NAME = $($DatabaseName)_data, FILENAME = '$defaultData\$($DatabaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
                 LOG ON (NAME = $($DatabaseName)_log, FILENAME='$defaultLog\$($DatabaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
             Write-PSFMessage -Level Debug -Message "SQL Statement: `n$query"
