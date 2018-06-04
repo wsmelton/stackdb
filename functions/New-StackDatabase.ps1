@@ -41,7 +41,7 @@ function New-StackDatabase {
         [string]$SqlServer,
         [PSCredential]$SqlCredential,
         [string]$DatabaseName,
-        [switch]$UseDefaultPath = $true,
+        [switch]$UseDefaultPath,
         [string]$DataPath,
         [string]$LogPath
     )
@@ -51,7 +51,7 @@ function New-StackDatabase {
                 IF (OBJECT_ID('dbo.PostsTypeIdDesc') IS NOT NULL)
                     DROP TABLE dbo.PostsTypeIdDesc;
                 CREATE TABLE [dbo].[PostsTypeIdDesc] (
-                    [PostTypeId] int,[Description] varchar(10));
+                    [PostTypeId] int,[Description] VARCHAR(10));
                 INSERT INTO [dbo].[PostsTypeIdDesc] (PostTypeId,Description)
                 VALUES (1,'Question'), (2,'Answer');";
             CloseReasonIdDesc     = "
@@ -94,7 +94,7 @@ function New-StackDatabase {
                 IF OBJECT_ID('dbo.VoteTypeIdDesc') IS NOT NULL
                     DROP TABLE dbo.VoteTypeIdDesc;
                 CREATE TABLE [dbo].[VoteTypeIdDesc] (
-                    [VoteTypeId] int,[Description] varchar(65));
+                    [VoteTypeId] int,[Description] VARCHAR(65));
                 INSERT INTO [dbo].[VoteTypeIdDesc] (VoteTypeId, Description)
                 VALUES (1,'AcceptedByOriginator'),(2,'UpMod'),
                 (3,'DownMod'),(4,'Offensive'),
@@ -125,7 +125,7 @@ function New-StackDatabase {
                 CREATE TABLE [dbo].[Posts] (
                     [Id] int,[PostTypeId] int NULL,[ParentId] int NULL,
                     [AcceptedAnswerId] int NULL,[CreationDate] datetime NULL,
-                    [Score] int NULL,[ViewCount] int NULL,[Body] nvarchar(max) NULL,
+                    [Score] int NULL,[ViewCount] int NULL,[Body] NVARCHAR(max) NULL,
                     [OwnerUserId] int NULL,[LastEditorUserId] int NULL,
                     [LastEditorDisplayName] varchar(250) NULL,
                     [LastEditDate] datetime NULL,[LastActivityDate] datetime NULL,
@@ -138,10 +138,10 @@ function New-StackDatabase {
                     DROP TABLE dbo.PostHistory;
                 CREATE TABLE [dbo].[PostHistory] (
                     [Id] int,[PostHistoryTypeId]	int NULL,
-                    [PostId] int NULL,[RevisionGUID] nvarchar(50) NULL,
+                    [PostId] int NULL,[RevisionGUID] NVARCHAR(50) NULL,
                     [CreationDate] datetime NULL,
                     [UserId] int NULL,[UserDisplayName] varchar(150) NULL,
-                    [Comment] nvarchar(max) NULL,[Text] nvarchar(max) NULL,
+                    [Comment] NVARCHAR(max) NULL,[Text] NVARCHAR(max) NULL,
                     [CloseReasonId] int NULL);";
             PostLinks             = "
                 IF OBJECT_ID('dbo.PostLinks') IS NOT NULL
@@ -185,28 +185,35 @@ function New-StackDatabase {
             return
         }
 
-        if ($UseDefaultPath -or (-not $DataPath -or -not $LogPath)) {
+        if (Test-PSFParameterBinding 'UseDefaultPath') {
             # Get default path of instance something
-            $sqlprops = Get-DbaSqlInstanceProperty -SqlInstance $instance
+            $sqlProps = Get-DbaSqlInstanceProperty -SqlInstance $instance -InstanceProperty DefaultFile,DefaultLog
             $defaultData = $sqlProps.Where( {$_.Name -eq 'DefaultFile'} ).Value
             $defaultLog = $sqlProps.Where( {$_.Name -eq 'DefaultLog'} ).Value
 
             Write-PSFMessage -Level Verbose -Message "Data Path: $defaultData"
             Write-PSFMessage -Level Verbose -Message "Log Path: $defaultLog"
-
-            $defaultData = $defaultData.TrimEnd("\")
-            $defaultLog = $defaultLog.TrimEnd("\")
+        }
+        elseif ( (Test-PSFParameterBinding 'DataPath') -or (Test-PSFParameterBinding 'LogPath') ) {
+            if (Test-DbaSqlPath -SqlInstance $instance -Path $DataPath) {
+                $defaultData = $DataPath.TrimEnd("\")
+            }
+            if (Test-DbaSqlPath -SqlInstance $instance -Path $LogPath) {
+                $defaultLog = $LogPath.TrimEnd("\")
+            }
         }
 
         if ($PSCmdlet.ShouldProcess($DatabaseName, "Creating the database")) {
-            if (Test-PSFParameterBinding 'DataPath') {
-                $defaultData = $DataPath.TrimEnd("\")
+            <# One last check to see if the data path is there #>
+            if ( (Test-DbaSqlPath -SqlInstance $instance -Path $defaultData) -eq $false ) {
+                Write-PSFMessage -Level Warning -Message "$defaultData is not accessible"
             }
-            if (Test-PSFParameterBinding 'LogPath') {
-                $defaultLog = $LogPath.TrimEnd("\")
+            if ( (Test-DbaSqlPath -SqlInstance $instance -Path $defaultLog) -eq $false ) {
+                Write-PSFMessage -Level Warning -Message "$defaultLog is not accessible"
             }
-            $query = "CREATE DATABASE $DatabaseName ON PRIMARY
-                (NAME = $($DatabaseName)_data, FILENAME = '$defaultData\$($DatabaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
+
+            $query = "CREATE DATABASE [$DatabaseName] ON PRIMARY
+                (NAME = $($DatabaseName)_data, FILENAME = '$($defaultData)\$($DatabaseName)_data.mdf', SIZE=150MB,FILEGROWTH=25MB)
                 LOG ON (NAME = $($DatabaseName)_log, FILENAME='$defaultLog\$($DatabaseName)_log.ldf', SIZE=25MB,FILEGROWTH=150MB)"
             Write-PSFMessage -Level Debug -Message "SQL Statement: `n$query"
 
