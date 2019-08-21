@@ -15,8 +15,6 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         daysUntilStale: 45
         daysUntilClose: 14
-        exemptLabels:
-            - "help+wanted"
-            - security
+        exemptLabels: 'help wanted', security
         stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.'
         stale-issue-label: 'itstaleyall'
